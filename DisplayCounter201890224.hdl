@@ -24,7 +24,7 @@ CHIP DisplayCounter201890224 {
     Mux16(a=false, b=maskedCount, sel=false, out=masked4);
 
     // 连接 `Decoder4to7`，用 `masked4_4bit`
-    Decoder4to7(in=masked4_4bit, a=a, b=b, c=c, d=d, e=e, f=f, g=g);
+    Decoder4to7(in=masked4, a=a, b=b, c=c, d=d, e=e, f=f, g=g);
 
 }
 
