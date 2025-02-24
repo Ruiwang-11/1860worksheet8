@@ -16,12 +16,8 @@ CHIP DisplayCounter201890224 {
     Or(a=inc, b=reset, out=load);
 
     // **取低 4 位**
-    And16(a=fullCount, b=0000000000001111, out=maskedCount);
-
-    // **修正 `Decoder4to7` 的输入**
-    // 由于 `maskedCount` 是 16-bit，我们需要手动提取低 4 位
-    // 解决方法：用 `Mux4Way16` 选择 `maskedCount` 的低 4 位
-    Mux4Way16(a=false, b=maskedCount, c=false, d=false, sel=false, out=masked4);
+    Mux16(a=false, b=true, sel=false, out=lowBitsMask); // 生成全 1 掩码
+    And16(a=fullCount, b=lowBitsMask, out=maskedCount); // 取低 4 位
 
     // 7 段解码器（只输入 4-bit）
     Decoder4to7(in=masked4, out=a, out=b, out=c, out=d, out=e, out=f, out=g);
