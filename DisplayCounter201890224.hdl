@@ -17,11 +17,8 @@ CHIP DisplayCounter201890224 {
 
     // **取低 4 位**
     Mux16(a=false, b=true, sel=false, out=lowBitsMask); // 生成全 1 掩码
-    And16(a=fullCount, b=lowBitsMask, out=maskedCount); // 取低 4 位
-    And(a=maskedCount[0], b=true, out=masked4[0]);
-    And(a=maskedCount[1], b=true, out=masked4[1]);
-    And(a=maskedCount[2], b=true, out=masked4[2]);
-    And(a=maskedCount[3], b=true, out=masked4[3]);
+    And16(a=fullCount, b=0000000000001111, out=tempMasked);
+    Register(in=tempMasked, load=true, out=maskedCount);
     // 7 段解码器（只输入 4-bit）
     Decoder4to7(in=masked4, a=a, b=b, c=c, d=d, e=e, f=f, g=g);
 }
