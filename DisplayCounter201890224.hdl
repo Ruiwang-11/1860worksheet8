@@ -1,20 +1,24 @@
+
 CHIP DisplayCounter201890224 {
     IN inc, reset;
     OUT a, b, c, d, e, f, g;
 
     PARTS:
-    // 4-bit Register to store count value
-    Register(in=out, load=load, out=count);
+    // 16-bit 计数器，但我们只用低 4 位
+    Register(in=newCount, load=load, out=fullCount);
     
-    // Incrementer (use only lower 4 bits)
-    Inc16(in=count, out=nextCount);
-    
-    // Reset logic
-    Mux16(a=nextCount, b=false, sel=reset, out=newCount);
+    // 只取低 4 位作为 7 段输入
+    And16(a=fullCount, b=0000000000001111, out=count4);
 
-    // Load logic: If inc is high, update count
+    // 递增计数
+    Inc16(in=fullCount, out=nextCount);
+
+    // 复位逻辑
+    Mux16(a=nextCount, b=0000, sel=reset, out=newCount);
+
+    // 加载逻辑 (inc 控制计数)
     Or(a=inc, b=reset, out=load);
 
-    // 7-segment decoder
-    Decoder4to7(in=count, outA=a, outB=b, outC=c, outD=d, outE=e, outF=f, outG=g);
+    // 7 段解码器
+    Decoder4to7(in=count4[0..3], outA=a, outB=b, outC=c, outD=d, outE=e, outF=f, outG=g);
 }
