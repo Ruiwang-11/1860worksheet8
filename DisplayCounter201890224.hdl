@@ -16,5 +16,5 @@ CHIP DisplayCounter201890224{
     Or(a=inc, b=reset, out=load);
 
     // 7 段解码器 (只用低 4 位)
-    Decoder4to7(in=shortcount, out=a, out=b, out=c, out=d, out=e, out=f, out=g);
+    Decoder4to7(in=shortcount[0..3], out=a, out=b, out=c, out=d, out=e, out=f, out=g);
 }
