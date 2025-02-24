@@ -3,16 +3,24 @@ CHIP Decoder4to7 {
     OUT a, b, c, d, e, f, g; // 7 段显示器控制信号
 
     PARTS:
-    // 通过 `DMux` 拆分不同的位
-    DMux4Way(in=in[3], sel=in[2..1], a=a1, b=a2, c=a3, d=a4);
-    DMux4Way(in=in[0], sel=in[2..1], a=b1, b=b2, c=b3, d=b4);
+    // 7 段显示器的真值表
+    // 0  -> 0111111  (abcdefg)
+    // 1  -> 0000110  (bc)
+    // 2  -> 1011011  (abdeg)
+    // 3  -> 1001111  (abcdg)
+    // 4  -> 1100110  (bcfg)
+    // 5  -> 1101101  (acdfg)
+    // 6  -> 1111101  (acdefg)
+    // 7  -> 0000111  (abc)
+    // 8  -> 1111111  (abcdefg)
+    // 9  -> 1101111  (abcdfg)
+    // A  -> 1110111  (abcefg)
+    // B  -> 1111100  (cdefg)
+    // C  -> 0111001  (adef)
+    // D  -> 1011110  (bcdeg)
+    // E  -> 1111001  (adefg)
+    // F  -> 1110001  (aefg)
 
-    // 7 段显示器输出
-    Or(a=a1, b=a2, out=a);
-    Or(a=b1, b=b2, out=b);
-    Or(a=a3, b=b4, out=c);
-    Or(a=b3, b=b4, out=d);
-    Not(in=a, out=e);
-    Not(in=b, out=f);
-    Not(in=c, out=g);
+    // 用 ROM 存储 7 段显示映射
+    ROM32K(address=in, out[7]=out);
 }
