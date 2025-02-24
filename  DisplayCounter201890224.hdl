@@ -1,0 +1,20 @@
+CHIP DisplayCounter201890224 {
+    IN inc, reset;
+    OUT a, b, c, d, e, f, g;
+
+    PARTS:
+    // 4-bit Register to store count value
+    Register(in=out, load=load, out=count);
+    
+    // Incrementer (use only lower 4 bits)
+    Inc16(in=count, out=nextCount);
+    
+    // Reset logic
+    Mux16(a=nextCount, b=false, sel=reset, out=newCount);
+
+    // Load logic: If inc is high, update count
+    Or(a=inc, b=reset, out=load);
+
+    // 7-segment decoder
+    Decoder4to7(in=count, outA=a, outB=b, outC=c, outD=d, outE=e, outF=f, outG=g);
+}
