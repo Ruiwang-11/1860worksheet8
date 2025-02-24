@@ -3,21 +3,18 @@ CHIP DisplayCounter201890224{
     OUT a, b, c, d, e, f, g;
 
     PARTS:
-    // 
-    Register(in=newCount, load=load, out=fullCount);
+    // 4-bit 计数器存储器
+    Register(in=newCount, load=load, out=count);
 
-    // 
-    And16(a=fullCount, b=0000000000001111, out=shortCount);
+    // 递增逻辑 (加1)
+    Inc16(in=count, out=nextCount);
 
-    // 
-    Inc16(in=fullCount, out=nextCount);
+    // 复位逻辑 (reset=1 时清零)
+    Mux16(a=nextCount, b=0000, sel=reset, out=newCount);
 
-    // 
-    Mux16(a=nextCount, b=0000000000000000, sel=reset, out=newCount);
-
-    // 
+    // 计数器更新控制 (inc=1 时计数)
     Or(a=inc, b=reset, out=load);
 
-    // 
-    Decoder4to7(in=shortCount[0..3], out=a, out=b, out=c, out=d, out=e, out=f, out=g);
+    // 7 段解码器 (只用低 4 位)
+    Decoder4to7(in=count[0..3], outA=a, outB=b, outC=c, outD=d, outE=e, outF=f, outG=g);
 }
