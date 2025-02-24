@@ -20,6 +20,6 @@ CHIP DisplayCounter201890224 {
     And16(a=fullCount, b=lowBitsMask, out=maskedCount); // 取低 4 位
 
     // 7 段解码器（只输入 4-bit）
-    Decoder4to7(in=masked4, out=a, out=b, out=c, out=d, out=e, out=f, out=g);
+    Decoder4to7(in=masked4, a=a, b=b, c=c, d=d, e=e, f=f, g=g);
 }
 
