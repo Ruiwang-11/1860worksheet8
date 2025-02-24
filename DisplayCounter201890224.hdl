@@ -16,7 +16,8 @@ CHIP DisplayCounter201890224 {
     Or(a=inc, b=reset, out=load);
 
     // **存储 `maskedCount` 使其可被访问**
-    And16(a=fullCount, b=0000000000001111, out=tempMasked);
+    Mux16(a=false, b=true, sel=false, out=lowBitsMask);
+    And16(a=fullCount, b=lowBitsMask, out=tempMasked);
     Register(in=tempMasked, load=true, out=maskedCount);
 
     // **手动提取 `maskedCount` 的低 4 位**
