@@ -1,26 +1,26 @@
-CHIP DisplayCounter201890224{
+CHIP DisplayCounter201890224 {
     IN inc, reset;
     OUT a, b, c, d, e, f, g;
 
     PARTS:
-    // 4-bit 计数器存储器
-    Register(in=newCount, load=load, out=count);
+    // 16-bit 计数器，存储当前值
+    Register(in=newCount, load=load, out=fullCount);
 
-    // 递增逻辑 (加1)
-    Inc16(in=count, out=nextCount);
+    // 递增逻辑 (加 1)
+    Inc16(in=fullCount, out=nextCount);
 
     // 复位逻辑 (reset=1 时清零)
     Mux16(a=nextCount, b=false, sel=reset, out=newCount);
 
-    // 计数器更新控制 (inc=1 时计数)
+    // 计数器的更新控制
     Or(a=inc, b=reset, out=load);
-    
-    // **取 4 位输入到 7 段解码器**
-    And16(a=fullCount, b=0000000000001111, out=maskedCount); // 取低 4 位
 
-    // **创建 4-bit 变量并赋值**
-    // HDL 不支持直接取子总线，因此我们用 Bus4 变量存储
-    Or8Way(in[0..3]=maskedCount[0..3], out=count4[0..3]);
-    // 7 段解码器 (只用低 4 位)
-    Decoder4to7(in=shortcount, out=a, out=b, out=c, out=d, out=e, out=f, out=g);
+    // **修正 `And16` 逻辑**
+    // HDL 不能直接使用 `b=0000000000001111`，需要用 `false` 和 `true` 生成掩码
+    Mux16(a=false, b=true, sel=false, out=lowBitsMask);
+    And16(a=fullCount, b=lowBitsMask, out=maskedCount);
+
+    // 7 段解码器
+    Decoder4to7(in=maskedCount, out=a, out=b, out=c, out=d, out=e, out=f, out=g);
 }
+
