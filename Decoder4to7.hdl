@@ -3,24 +3,30 @@ CHIP Decoder4to7 {
     OUT a, b, c, d, e, f, g; // 7 段显示器控制信号
 
     PARTS:
-    // 7 段显示器的真值表
-    // 0  -> 0111111  (abcdefg)
-    // 1  -> 0000110  (bc)
-    // 2  -> 1011011  (abdeg)
-    // 3  -> 1001111  (abcdg)
-    // 4  -> 1100110  (bcfg)
-    // 5  -> 1101101  (acdfg)
-    // 6  -> 1111101  (acdefg)
-    // 7  -> 0000111  (abc)
-    // 8  -> 1111111  (abcdefg)
-    // 9  -> 1101111  (abcdfg)
-    // A  -> 1110111  (abcefg)
-    // B  -> 1111100  (cdefg)
-    // C  -> 0111001  (adef)
-    // D  -> 1011110  (bcdeg)
-    // E  -> 1111001  (adefg)
-    // F  -> 1110001  (aefg)
+    // 用 逻辑门 实现 7 段显示器解码
+    Not(in=in[0], out=n0);
+    Not(in=in[1], out=n1);
+    Not(in=in[2], out=n2);
+    Not(in=in[3], out=n3);
 
-    // 用 ROM 存储 7 段显示映射
-    ROM32K(address=in, out[7]=out);
+    // 计算 a 段的显示逻辑
+    And(a=n3, b=n1, out=a);
+
+    // 计算 b 段的显示逻辑
+    Or(a=n2, b=n0, out=b);
+
+    // 计算 c 段的显示逻辑
+    And(a=n1, b=n0, out=c);
+
+    // 计算 d 段的显示逻辑
+    Or(a=n2, b=n3, out=d);
+
+    // 计算 e 段的显示逻辑
+    And(a=n1, b=n2, out=e);
+
+    // 计算 f 段的显示逻辑
+    Or(a=n0, b=n3, out=f);
+
+    // 计算 g 段的显示逻辑
+    And(a=n1, b=n3, out=g);
 }
