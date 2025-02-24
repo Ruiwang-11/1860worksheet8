@@ -1,20 +1,19 @@
 CHIP Decoder4to7 {
-    IN in[4];
-    OUT a, b, c, d, e, f, g;
+    IN in[4];    // 4-bit 输入 (二进制)
+    OUT a, b, c, d, e, f, g; // 7 段显示器的 7 个控制信号
 
     PARTS:
-    // 7 段显示器的逻辑映射 (基于 16 进制数 0~15)
-    Mux16(a=false, b=true, sel=in[3], out=mux1);
-    Mux16(a=false, b=true, sel=in[2], out=mux2);
-    Mux16(a=false, b=true, sel=in[1], out=mux3);
-    Mux16(a=false, b=true, sel=in[0], out=mux4);
+    // **二进制到 7 段显示映射逻辑**
+    // 每一位代表一个段的开关，基于 7 段显示的编码规则
+    // 你可以使用多个 DMux / Or / And / Not 逻辑门进行实现
 
-    // 7 段输出信号
-    Or(a=mux1, b=mux2, out=a);
-    Or(a=mux3, b=mux4, out=b);
-    Not(in=mux1, out=c);
-    Not(in=mux2, out=d);
-    Not(in=mux3, out=e);
-    Not(in=mux4, out=f);
-    Or(a=a, b=b, out=g);
+    // 
+    Mux4Way16(
+        a=0000001,  // 0 显示 (ABCDEFG)
+        b=1001111,  // 1 显示 (BC)
+        c=0010010,  // 2 显示 (ABDEG)
+        d=0000110,  // 3 显示 (ABCDG)
+        sel=in,
+        out[0]=a, out[1]=b, out[2]=c, out[3]=d, out[4]=e, out[5]=f, out[6]=g
+    );
 }
