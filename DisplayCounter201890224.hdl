@@ -21,11 +21,10 @@ CHIP DisplayCounter201890224 {
     Register(in=tempMasked, load=true, out=maskedCount);
 
     // **手动提取 `maskedCount` 的低 4 位**
-    And(a=maskedCount, b=true, out=masked4_4bit);
-
+    Mux16(a=false, b=maskedCount, sel=false, out=masked4);
 
     // 连接 `Decoder4to7`，用 `masked4_4bit`
-    Decoder4to7(in=masked4_4bit, a=a, b=b, c=c, d=d, e=e, f=f, g=g);
+    Decoder4to7(in=masked4, a=a, b=b, c=c, d=d, e=e, f=f, g=g);
 
 }
 
