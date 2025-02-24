@@ -3,20 +3,32 @@ CHIP Decoder4to7 {
     OUT a, b, c, d, e, f, g; // 7 段显示器的 7 个控制信号
 
     PARTS:
-    // **二进制到 7 段显示映射逻辑**
-    // 采用 16 进制数的真值表
+    // **真值表映射**
+    // 0-15 的二进制数转换成 7 段显示的信号
 
-    Mux16(a=false, b=true, sel=in[0], out=mux0);
-    Mux16(a=false, b=true, sel=in[1], out=mux1);
-    Mux16(a=false, b=true, sel=in[2], out=mux2);
-    Mux16(a=false, b=true, sel=in[3], out=mux3);
+    // 0 = 0b0111111 (abcdefg)
+    // 1 = 0b0000110 (bc)
+    // 2 = 0b1011011 (abdeg)
+    // 3 = 0b1001111 (abcdg)
+    // 4 = 0b1100110 (bcfg)
+    // 5 = 0b1101101 (acdfg)
+    // 6 = 0b1111101 (acdefg)
+    // 7 = 0b0000111 (abc)
+    // 8 = 0b1111111 (abcdefg)
+    // 9 = 0b1101111 (abcdfg)
 
-    // 7 段显示器控制信号
-    Not(in=mux0, out=a);
-    Not(in=mux1, out=b);
-    Not(in=mux2, out=c);
-    Not(in=mux3, out=d);
-    Or(a=mux0, b=mux1, out=e);
-    Or(a=mux2, b=mux3, out=f);
+    // 用 Mux 选择不同的字符输出
+    Mux4Way(a=false, b=true, c=true, d=false, sel=in[0], out=mux0);
+    Mux4Way(a=false, b=true, c=false, d=true, sel=in[1], out=mux1);
+    Mux4Way(a=true, b=false, c=true, d=true, sel=in[2], out=mux2);
+    Mux4Way(a=false, b=true, c=false, d=true, sel=in[3], out=mux3);
+
+    // 连接 7 段信号
+    And(a=mux0, b=mux1, out=a);
+    And(a=mux2, b=mux3, out=b);
+    Or(a=mux0, b=mux2, out=c);
+    Or(a=mux1, b=mux3, out=d);
+    And(a=mux0, b=mux3, out=e);
+    Or(a=mux1, b=mux2, out=f);
     Or(a=a, b=b, out=g);
 }
