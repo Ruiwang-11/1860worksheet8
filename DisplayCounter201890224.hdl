@@ -7,7 +7,7 @@ CHIP DisplayCounter201890224{
     Register(in=newCount, load=load, out=fullCount);
 
     // 
-    And(a=fullCount, b=0000000000001111, out=shortCount);
+    And16(a=fullCount, b=0000000000001111, out=shortCount);
 
     // 
     Inc16(in=fullCount, out=nextCount);
