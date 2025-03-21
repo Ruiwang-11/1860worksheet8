@@ -2,28 +2,24 @@ CHIP DisplayCounter201890224 {
     IN inc, reset;
     OUT a, b, c, d, e, f, g;
 
-    PARTS:
-    // 16-bit 计数器，存储当前值
-    Register(in=newCount, load=load, out=fullCount);
+   PARTS:
+// 16-bit register to hold current count
+Register(in=next_count, load=true, out=current);
 
-    // 递增逻辑 (加 1)
-    Inc16(in=fullCount, out=nextCount);
+// Increment current value
+Inc16(in=current, out=inc_out);
 
-    // 复位逻辑 (reset=1 时清零)
-    Mux16(a=nextCount, b=false, sel=reset, out=newCount);
+// Check if incremented value is 16 (overflow)
+Eq16(a=inc_out, b=16, out=is_overflow);
 
-    // 计数器的更新控制
-    Or(a=inc, b=reset, out=load);
+// Mux: if overflow, select 0; else select inc_out
+Mux16(a=inc_out, b=0, sel=is_overflow, out=inc_or_zero);
 
-    // **存储 `maskedCount` 使其可被访问**
-    Mux16(a=false, b=true, sel=false, out=lowBitsMask);
-    And16(a=fullCount, b=lowBitsMask, out=tempMasked);
-    Register(in=tempMasked, load=true, out=maskedCountReg); // **存入 Register**
+// Mux: select between current or inc_or_zero based on inc
+Mux16(a=current, b=inc_or_zero, sel=inc, out=next_inc);
 
-    // **手动提取 `maskedCountReg` 的低 4 位**
-    Mux16(a=false, b=maskedCountReg, sel=false, out=masked4);
+// Mux: select between next_inc or 0 based on reset
+Mux16(a=next_inc, b=0, sel=reset, out=next_count);
 
-    // **连接 Decoder4to7**
-    Decoder4to7(in=masked4, a=a, b=b, c=c, d=d, e=e, f=f, g=g);
-}
-
+// 7-segment decoder for lower 4 bits of current count
+SevenSegDecoder(in=current[0..3], a=a, b=b, c=c, d=d, e=e, f=f, g=g);
