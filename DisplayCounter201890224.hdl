@@ -3,13 +3,12 @@ CHIP DisplayCounter201890224 {
     OUT a, b, c, d, e, f, g;
 
     PARTS:
-    // 4-bit counter (using a 16-bit counter and only using the lowest 4 bits)
-    Inc16(in=counterOut, out=nextCount, load=load, inc=inc);
-    
-    // Mux to decide when to reset
-    Mux16(a=nextCount, b=false, sel=reset, out=counterOut);
+    // 4 位计数器，使用 Inc16，但仅使用其低 4 位
+    Inc16(in=false, out=counterOut, inc=inc);
 
-    // Decoder to convert counter output to 7-segment signals
-    Decoder4to7(in=counterOut[3..0], outA=a, outB=b, outC=c, outD=d, outE=e, outF=f, outG=g);
+    // 当 reset 为高时，将计数值归零
+    Mux16(a=counterOut, b=false, sel=reset, out=countValue);
+
+    // 7 段译码器，将 4 位计数值转换为 7 段信号
+    Decoder4to7(in=countValue[3..0], outA=a, outB=b, outC=c, outD=d, outE=e, outF=f, outG=g);
 }
-
