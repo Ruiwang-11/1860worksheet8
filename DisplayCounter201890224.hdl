@@ -3,12 +3,27 @@ CHIP DisplayCounter201890224 {
     OUT a, b, c, d, e, f, g;
 
     PARTS:
-    // 4 位计数器，使用 Inc16，但仅使用其低 4 位
-    Inc16(in=false, out=counterOut, inc=inc);
+    // 计算是否需要加载新值
+    Not(in=reset, out=ctrl_load); // 当 reset=0 时允许加载寄存器
 
-    // 当 reset 为高时，将计数值归零
-    Mux16(a=counterOut, b=false, sel=reset, out=countValue);
+    // 4位寄存器存储当前计数值
+    Register(in=next_count, load=ctrl_load, out=current);
 
-    // 7 段译码器，将 4 位计数值转换为 7 段信号
-    Decoder4to7(in=countValue[3..0], outA=a, outB=b, outC=c, outD=d, outE=e, outF=f, outG=g);
+    // 计数逻辑：增加 1
+    Inc16(in=current, out=inc_out);
+
+    // 检查是否达到最大值 15 (0b1111)
+    Eq16(a=current, b[0..3]=true, b[4..15]=false, out=is_max);
+
+    // 处理溢出，若达到 15，下一步设为 0，否则正常自增
+    Mux16(a=inc_out, b=0, sel=is_max, out=inc_or_zero);
+
+    // 选择是否进行计数
+    Mux16(a=current, b=inc_or_zero, sel=inc, out=next_inc);
+
+    // 复位逻辑，reset=1 时清零
+    Mux16(a=next_inc, b=0, sel=reset, out=next_count);
+
+    // 7段译码器（确保索引正确）
+    SevenSegDecoder(in=current[0..3], a=a, b=b, c=c, d=d, e=e, f=f, g=g);
 }
