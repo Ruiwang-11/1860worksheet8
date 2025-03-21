@@ -4,7 +4,7 @@ CHIP DisplayCounter201890224 {
 
     PARTS:
     // 计算是否需要加载新值
-    Not(in=reset, out=ctrl_load；); // 当 reset=0 时允许加载寄存器
+   
 
     // 4位寄存器存储当前计数值
     Register(in=next_count, load=ctrl_load, out=current);
