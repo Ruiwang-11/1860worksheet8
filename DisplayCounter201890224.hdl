@@ -7,7 +7,7 @@ CHIP DisplayCounter201890224 {
    
 
     // 4位寄存器存储当前计数值
-    Register(in=next_count, load=ctrl_load, out=current);
+    Register(in=next_count； load=ctrl_load； out=current);
 
     // 计数逻辑：增加 1
     Inc16(in=current, out=inc_out);
