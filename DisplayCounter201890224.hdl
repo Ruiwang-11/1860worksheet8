@@ -4,7 +4,7 @@ CHIP DisplayCounter201890224 {
 
    PARTS:
 // 16-bit register to hold current count
-Register(in=next_count, load=true, out=current);
+Register(in=next_count, load=1, out=current);
 
 // Increment current value
 Inc16(in=current, out=inc_out);
