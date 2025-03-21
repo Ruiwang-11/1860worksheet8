@@ -3,18 +3,13 @@ CHIP DisplayCounter201890224 {
     OUT a, b, c, d, e, f, g;
 
     PARTS:
-    // 控制寄存器负载信号（假设始终允许加载）
-    Not(in=reset, out=ctrl_load); // 示例逻辑：当 reset=0 时允许加载
+    // 4-bit counter (using a 16-bit counter and only using the lowest 4 bits)
+    Inc16(in=counterOut, out=nextCount, load=load, inc=inc);
+    
+    // Mux to decide when to reset
+    Mux16(a=nextCount, b=false, sel=reset, out=counterOut);
 
-    // 寄存器实例化
-    Register(in=next_count, load=ctrl_load, out=current);
+    // Decoder to convert counter output to 7-segment signals
+    Decoder4to7(in=counterOut[3..0], outA=a, outB=b, outC=c, outD=d, outE=e, outF=f, outG=g);
+}
 
-    // 其他逻辑保持不变...
-    Inc16(in=current, out=inc_out);
-    Eq16(a=inc_out, b=16, out=is_overflow);
-    Mux16(a=inc_out, b=0, sel=is_overflow, out=inc_or_zero);
-    Mux16(a=current, b=inc_or_zero, sel=inc, out=next_inc);
-    Mux16(a=next_inc, b=0, sel=reset, out=next_count);
-
-    // 7段译码器（修正位选择语法）
-    SevenSegDecoder(in=current[0..3]}, a=a, b=b, c=c, d=d, e=e, f=f, g=g);
