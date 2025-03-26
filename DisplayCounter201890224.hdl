@@ -3,41 +3,25 @@ CHIP DisplayCounter201890224 {
     OUT a, b, c, d, e, f, g;
 
     PARTS:
-    // 内部：4位寄存器保存当前计数
-    // 用4位宽寄存器保存当前数值
-    // 不用 Inc16，只需要手动递增4位
+    // 用 16-bit Register 保存当前值（只使用低 4 位）
+    // 当前计数值
+    Register(in=next, load=loadSig, out=curr);
 
-    // Register to hold 4-bit counter value
-    // 4个 DFF 实现 4位寄存器（或使用 RAM）
-    // 但可以使用内建 Register 芯片 + Mux 来控制 inc/reset
+    // 增加 1
+    Inc16(in=curr, out=incVal);
 
-    // Counter register
-    // 用 RAM16 芯片更简单
-    // 这里只需要一个 4-bit Register（Counter）
+    // reset 高时输出 0
+    Mux16(a=curr, b[0..15]=false, sel=reset, out=afterReset);
 
-    // 原始值（全 0）
-    // 或者创建一个 16-bit 中低 4 位有效的寄存器
-    // 使用内置的 Counter4.hdl 结构最清晰
-    // 所以直接使用一个 4-bit Register + 加法器
-
-    // 以下是伪代码结构，可按你所用 HDL 芯片库替换：
-    
-    // 寄存器当前值
-    Register(in=next, load=loadSignal, out=curr);
-
-    // 递增
-    Add16(a=curr, b[0]=true, b[1..15]=false, out=incVal);
-
-    // Mux 选择：reset 高时 -> 0；否则看是否加1
-    Mux16(a=curr, b=false, sel=reset, out=afterReset);
+    // inc 为 1 时递增，否则保持
     Mux16(a=afterReset, b=incVal, sel=inc, out=next);
 
-    // 只在 inc 或 reset 时加载
-    Or(a=inc, b=reset, out=loadSignal);
+    // 如果 inc 或 reset 为高，loadSig = 1
+    Or(a=inc, b=reset, out=loadSig);
 
-    // 输出连接到解码器
+    // 使用你自己写的解码器
     DecoderSegment201890224(
         A=curr[0], B=curr[1], C=curr[2], D=curr[3],
         a=a, b=b, c=c, d=d, e=e, f=f, g=g
     );
-}
+} 
