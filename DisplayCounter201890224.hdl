@@ -3,31 +3,26 @@ CHIP DisplayCounter201890224 {
     OUT a, b, c, d, e, f, g;
 
     PARTS:
-    // 当前计数值：16 位
+    // 当前计数值存储器
     Register(in=nextVal, load=load, out=currentVal);
 
-    // 增加 1
+    // 判断是否需要加一
     Inc16(in=currentVal, out=incVal);
 
-    // 根据 inc 是否加一
+    // 选择器：reset 优先，其次 inc
     Mux16(a=currentVal, b=incVal, sel=inc, out=maybeInc);
-
-    // 根据 reset 是否归零
     Mux16(a=maybeInc, b[0..15]=false, sel=reset, out=nextVal);
 
-    // 判断是否更新寄存器
-    Or(a=inc, b=reset, out=load);
+    // 取低 4 位作为 Decoder 输入
+    And(a=true, b=currentVal[0], out=D);
+    And(a=true, b=currentVal[1], out=C);
+    And(a=true, b=currentVal[2], out=B);
+    And(a=true, b=currentVal[3], out=A);
 
-    // 用 Bit 提取低四位
-    // 提取 currentVal 的低四位：作为 Decoder 输入
-    // 提取 currentVal 的低四位：作为 Decoder 输入
-    And(a=currentVal, b[0..2]=false, b[3]=true, b[4..15]=false, out=A);
-    And(a=currentVal, b[0..1]=false, b[2]=true, b[3..15]=false, out=B);
-    And(a=currentVal, b[0]=false, b[1]=true, b[2..15]=false, out=C);
-    And(a=currentVal, b[0]=true, b[1..15]=false, out=D);
-
-
-    // 显示器译码器
-    Decoder201890224(A=A, B=B, C=C, D=D,
+    // 译码器
+    Decoder201890224(A=A, B=B, C=C, D=D, 
                      a=a, b=b, c=c, d=d, e=e, f=f, g=g);
+
+    // 寄存器是否 load
+    Or(a=reset, b=inc, out=load);
 }
