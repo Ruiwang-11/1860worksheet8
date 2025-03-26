@@ -3,27 +3,41 @@ CHIP DisplayCounter201890224 {
     OUT a, b, c, d, e, f, g;
 
     PARTS:
-    // 计算是否需要加载新值
-   
+    // 内部：4位寄存器保存当前计数
+    // 用4位宽寄存器保存当前数值
+    // 不用 Inc16，只需要手动递增4位
 
-    // 4位寄存器存储当前计数值
+    // Register to hold 4-bit counter value
+    // 4个 DFF 实现 4位寄存器（或使用 RAM）
+    // 但可以使用内建 Register 芯片 + Mux 来控制 inc/reset
 
+    // Counter register
+    // 用 RAM16 芯片更简单
+    // 这里只需要一个 4-bit Register（Counter）
 
-    // 计数逻辑：增加 1
-    Inc16(in=current, out=inc_out);
+    // 原始值（全 0）
+    // 或者创建一个 16-bit 中低 4 位有效的寄存器
+    // 使用内置的 Counter4.hdl 结构最清晰
+    // 所以直接使用一个 4-bit Register + 加法器
 
-    // 检查是否达到最大值 15 (0b1111)
-    Eq16(a=current, b[0..3]=true, b[4..15]=false, out=is_max);
+    // 以下是伪代码结构，可按你所用 HDL 芯片库替换：
+    
+    // 寄存器当前值
+    Register(in=next, load=loadSignal, out=curr);
 
-    // 处理溢出，若达到 15，下一步设为 0，否则正常自增
-    Mux16(a=inc_out, b=0, sel=is_max, out=inc_or_zero);
+    // 递增
+    Add16(a=curr, b[0]=true, b[1..15]=false, out=incVal);
 
-    // 选择是否进行计数
-    Mux16(a=current, b=inc_or_zero, sel=inc, out=next_inc);
+    // Mux 选择：reset 高时 -> 0；否则看是否加1
+    Mux16(a=curr, b=false, sel=reset, out=afterReset);
+    Mux16(a=afterReset, b=incVal, sel=inc, out=next);
 
-    // 复位逻辑，reset=1 时清零
-    Mux16(a=next_inc, b=0, sel=reset, out=next_count);
+    // 只在 inc 或 reset 时加载
+    Or(a=inc, b=reset, out=loadSignal);
 
-    // 7段译码器（确保索引正确）
-    SevenSegDecoder(in=current[0..3], a=a, b=b, c=c, d=d, e=e, f=f, g=g);
+    // 输出连接到解码器
+    DecoderSegment201890224(
+        A=curr[0], B=curr[1], C=curr[2], D=curr[3],
+        a=a, b=b, c=c, d=d, e=e, f=f, g=g
+    );
 }
