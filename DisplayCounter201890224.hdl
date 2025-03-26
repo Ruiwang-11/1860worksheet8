@@ -19,10 +19,12 @@ CHIP DisplayCounter201890224 {
     Or(a=inc, b=reset, out=load);
 
     // 用 Bit 提取低四位
-    Bit(in=currentVal, sel=3, out=A);
-    Bit(in=currentVal, sel=2, out=B);
-    Bit(in=currentVal, sel=1, out=C);
-    Bit(in=currentVal, sel=0, out=D);
+    // 提取 currentVal 的低四位：作为 Decoder 输入
+    Mux16(a=false, b=true, sel=currentVal[3], out=A);
+    Mux16(a=false, b=true, sel=currentVal[2], out=B);
+    Mux16(a=false, b=true, sel=currentVal[1], out=C);
+    Mux16(a=false, b=true, sel=currentVal[0], out=D);
+
 
     // 显示器译码器
     Decoder201890224(A=A, B=B, C=C, D=D,
