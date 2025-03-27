@@ -1,35 +1,29 @@
 CHIP DisplayCounter201890224 {
     IN inc, reset;
-    OUT a, b, c, d, e, f, g;
+    OUT a, b, c, d, e, f, g，counter[16]; // 额外声明为输出，用来合法切片
 
     PARTS:
-    // 存储当前计数值
-    Register(in=next, load=load, out=curr);
+    // 计数器寄存器：curr -> counter（合法输出）
+    Register(in=next, load=load, out=counter);
 
-    // 自增
-    Inc16(in=curr, out=plus1);
+    // 增加1
+    Inc16(in=counter, out=plus1);
 
-    // 判断是否inc
-    Mux16(a=curr, b=plus1, sel=inc, out=incResult);
+    // inc 控制是否加1
+    Mux16(a=counter, b=plus1, sel=inc, out=incResult);
 
-    // 判断是否reset
+    // reset 控制是否清零
     Mux16(a=incResult, b=false, sel=reset, out=next);
 
     // load = inc or reset
     Or(a=inc, b=reset, out=load);
 
-    // 拆分 curr 的低4位，用 And 提取到 A~D
-    And(a=curr[0], b=true, out=A);
-    And(a=curr[1], b=true, out=B);
-    And(a=curr[2], b=true, out=C);
-    And(a=curr[3], b=true, out=D);
-
-    // 显示到 7 段译码器
+    // 使用合法的 counter[0~3] 切片作为输入
     Decoder201890224(
-        A=A,
-        B=B,
-        C=C,
-        D=D,
+        A=counter[0],
+        B=counter[1],
+        C=counter[2],
+        D=counter[3],
         a=a, b=b, c=c, d=d, e=e, f=f, g=g
     );
 }
