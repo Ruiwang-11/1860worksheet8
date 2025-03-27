@@ -4,14 +4,7 @@ CHIP Decoder201890224{
 
     PARTS:
     // 反变量
-    Not(in=in[3]，out=az);
-    Not(in=az，out=A);
-    Not(in=in[2]，out=bz);
-    Not(in=bz，out=B);
-    Not(in=in[1]，out=cz);
-    Not(in=cz，out=C);
-    Not(in=in[0], out=dz);
-    Not(in=dz，out=D);
+    
     Not(in=A, out=nA);
     Not(in=B, out=nB);
     Not(in=C, out=nC);
