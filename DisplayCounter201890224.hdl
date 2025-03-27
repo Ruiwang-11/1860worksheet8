@@ -1,7 +1,7 @@
 CHIP DisplayCounter201890224 {
     IN inc, reset;
     OUT a, b, c, d, e, f, g;
-
+    OUT currBits[16];
     PARTS:
     // 当前寄存器值
     Register(in=nextVal, load=load, out=currVal);
