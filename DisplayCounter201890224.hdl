@@ -3,24 +3,28 @@ CHIP DisplayCounter201890224 {
     OUT a, b, c, d, e, f, g;
 
     PARTS:
-    // 当前寄存值
+    // 用一个寄存器保存当前值（16 位）
     Register(in=next, load=load, out=out);
 
-    // 自增
-    Inc16(in=out, out=outPlus1);
+    // 加一操作
+    Inc16(in=out, out=plus1);
 
-    // reset 优先级高于 inc
-    Mux16(a=out, b=outPlus1, sel=inc, out=afterInc);
+    // 判断是否 inc
+    Mux16(a=out, b=plus1, sel=inc, out=afterInc);
+
+    // 判断是否 reset
     Mux16(a=afterInc, b=false, sel=reset, out=next);
+
+    // load = inc OR reset
     Or(a=inc, b=reset, out=load);
 
-    // 提取前 4 位（不能直接写 out[0]，要用合法 wire）
-    And(a=out[0], b=true, out=w0);
-    And(a=out[1], b=true, out=w1);
-    And(a=out[2], b=true, out=w2);
-    And(a=out[3], b=true, out=w3);
+    // 提取 out[0~3]，合法提法（不能直接切片）
+    And(a=out[0], b=true, out=w0);  // 第0位
+    And(a=out[1], b=true, out=w1);  // 第1位
+    And(a=out[2], b=true, out=w2);  // 第2位
+    And(a=out[3], b=true, out=w3);  // 第3位
 
-    // 接入七段译码器
+    // 传入七段译码器（你的芯片）
     Decoder201890224(
         A=w0,
         B=w1,
