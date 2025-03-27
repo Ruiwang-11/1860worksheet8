@@ -3,34 +3,33 @@ CHIP DisplayCounter201890224 {
     OUT a, b, c, d, e, f, g;
 
     PARTS:
-    // 四个寄存器位，表示 0~15 的4位二进制数：b3 b2 b1 b0
-    Bit(in=in0, load=load, out=out0);  // A
-    Bit(in=in1, load=load, out=out1);  // B
-    Bit(in=in2, load=load, out=out2);  // C
-    Bit(in=in3, load=load, out=out3);  // D
+    // 存储当前计数值
+    Register(in=next, load=load, out=curr);
 
-    // 组合成 16 位输入给 Inc16（高12位补0）
-    // 注意顺序：从低位到高位是 out0~out3
-    Or8Way(in[0..7]=false, out=zero8); // fake 0 for padding
-    Or(a=false, b=false, out=zero);
-    And(a=out0, b=true, out=bit0);
-    And(a=out1, b=true, out=bit1);
-    And(a=out2, b=true, out=bit2);
-    And(a=out3, b=true, out=bit3);
+    // 自增
+    Inc16(in=curr, out=plus1);
 
-    // 拼出 curr[16]
-    // curr = [ ..., 0, 0, 0, bit3, bit2, bit1, bit0 ]
-    // 你也可以自己构建一个小组件来组合，但这里只是思路提示。
+    // 判断是否inc
+    Mux16(a=curr, b=plus1, sel=inc, out=incResult);
 
-    // 假设你有个 curr[16] = 拼合(bit0~bit3)，传给 Inc16
-    // Inc16(in=curr, out=plusOne)
+    // 判断是否reset
+    Mux16(a=incResult, b=false, sel=reset, out=next);
 
-    // 最终只要输出 4 位给 Decoder
+    // load = inc or reset
+    Or(a=inc, b=reset, out=load);
+
+    // 拆分 curr 的低4位，用 And 提取到 A~D
+    And(a=curr[0], b=true, out=A);
+    And(a=curr[1], b=true, out=B);
+    And(a=curr[2], b=true, out=C);
+    And(a=curr[3], b=true, out=D);
+
+    // 显示到 7 段译码器
     Decoder201890224(
-        A=out0,  // LSB
-        B=out1,
-        C=out2,
-        D=out3,  // MSB
+        A=A,
+        B=B,
+        C=C,
+        D=D,
         a=a, b=b, c=c, d=d, e=e, f=f, g=g
     );
 }
