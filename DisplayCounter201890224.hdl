@@ -3,34 +3,38 @@ CHIP DisplayCounter201890224 {
     OUT a, b, c, d, e, f, g;
 
     PARTS:
-    // 状态寄存器：每位独立
-    Bit(in=bit0, load=load, out=out0);
-    Bit(in=bit1, load=load, out=out1);
-    Bit(in=bit2, load=load, out=out2);
-    Bit(in=bit3, load=load, out=out3);
+    // 4 位寄存器输出
+    Bit(in=in0, load=load, out=out0);
+    Bit(in=in1, load=load, out=out1);
+    Bit(in=in2, load=load, out=out2);
+    Bit(in=in3, load=load, out=out3);
 
-    // 手动计算加1：out + 1 → sum0~3
-    Xor(a=out0, b=inc, out=sum0);
+    // ===== 手动构造加法器 =====
+    // 第一位（最低位）
+    Xor(a=out0, b=inc, out=next0);
     And(a=out0, b=inc, out=c1);
 
-    Xor(a=out1, b=c1, out=sum1);
+    // 第二位
+    Xor(a=out1, b=c1, out=next1);
     And(a=out1, b=c1, out=c2);
 
-    Xor(a=out2, b=c2, out=sum2);
+    // 第三位
+    Xor(a=out2, b=c2, out=next2);
     And(a=out2, b=c2, out=c3);
 
-    Xor(a=out3, b=c3, out=sum3);
+    // 第四位
+    Xor(a=out3, b=c3, out=next3);
 
-    // reset 优先级最高：0 -> bitX；否则使用 sumX
-    Mux(a=sum0, b=false, sel=reset, out=bit0);
-    Mux(a=sum1, b=false, sel=reset, out=bit1);
-    Mux(a=sum2, b=false, sel=reset, out=bit2);
-    Mux(a=sum3, b=false, sel=reset, out=bit3);
+    // ===== 处理 reset 控制优先级 =====
+    Mux(a=next0, b=false, sel=reset, out=in0);
+    Mux(a=next1, b=false, sel=reset, out=in1);
+    Mux(a=next2, b=false, sel=reset, out=in2);
+    Mux(a=next3, b=false, sel=reset, out=in3);
 
-    // 只要 inc 或 reset 为 1，就 load 更新
+    // load 控制：只要 inc 或 reset 有一个为 1 就加载
     Or(a=inc, b=reset, out=load);
 
-    // 接入你的七段译码器
+    // ===== 输出接到七段译码器 =====
     Decoder201890224(
         A=out0,
         B=out1,
