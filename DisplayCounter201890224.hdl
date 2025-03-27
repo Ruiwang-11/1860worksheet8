@@ -3,40 +3,38 @@ CHIP DisplayCounter201890224 {
     OUT a, b, c, d, e, f, g;
 
     PARTS:
-    // ------------- 寄存器位（当前计数）-------------
+    // 寄存器：每位独立控制，代表当前值（从低位到高位）
     Bit(in=in0, load=load, out=out0);
     Bit(in=in1, load=load, out=out1);
     Bit(in=in2, load=load, out=out2);
     Bit(in=in3, load=load, out=out3);
 
-    // ------------- 加法器逻辑（out0~out3 + 1）-------------
+    // 构建加法逻辑（out + 1）
+    // 第一位（LSB）
+    Xor(a=out0, b=inc, out=next0);
+    And(a=out0, b=inc, out=c1);
 
-    // LSB位（bit0）：new0 = out0 XOR inc，carry0 = out0 AND inc
-    Xor(a=out0, b=inc, out=new0);
-    And(a=out0, b=inc, out=carry0);
+    // 第二位
+    Xor(a=out1, b=c1, out=next1);
+    And(a=out1, b=c1, out=c2);
 
-    // bit1：new1 = out1 XOR carry0，carry1 = out1 AND carry0
-    Xor(a=out1, b=carry0, out=new1);
-    And(a=out1, b=carry0, out=carry1);
+    // 第三位
+    Xor(a=out2, b=c2, out=next2);
+    And(a=out2, b=c2, out=c3);
 
-    // bit2：new2 = out2 XOR carry1，carry2 = out2 AND carry1
-    Xor(a=out2, b=carry1, out=new2);
-    And(a=out2, b=carry1, out=carry2);
+    // 第四位（MSB）
+    Xor(a=out3, b=c3, out=next3);
 
-    // bit3：new3 = out3 XOR carry2，忽略溢出
-    Xor(a=out3, b=carry2, out=new3);
+    // reset 优先级高于加法器输出
+    Mux(a=next0, b=false, sel=reset, out=in0);
+    Mux(a=next1, b=false, sel=reset, out=in1);
+    Mux(a=next2, b=false, sel=reset, out=in2);
+    Mux(a=next3, b=false, sel=reset, out=in3);
 
-    // ------------- reset 控制 mux（是否归零）-------------
-    // 如果 reset=1，就清零；否则用加一结果
-    Mux(a=new0, b=false, sel=reset, out=in0);
-    Mux(a=new1, b=false, sel=reset, out=in1);
-    Mux(a=new2, b=false, sel=reset, out=in2);
-    Mux(a=new3, b=false, sel=reset, out=in3);
-
-    // load = inc OR reset（任何操作都加载新值）
+    // load = inc or reset
     Or(a=inc, b=reset, out=load);
 
-    // ------------- 连接你的七段译码器 -------------
+    // 输出给七段译码器
     Decoder201890224(
         A=out0,
         B=out1,
