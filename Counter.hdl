@@ -1,32 +1,11 @@
-CHIP Counter {
-    IN inc, reset;
-    OUT out0, out1, out2, out3;
-
+CHIP Counter{
+    IN inc, reset,
+    OUT out[16];
     PARTS:
-    // 独立4位寄存器
-    Bit(in=in0, load=load, out=out0);
-    Bit(in=in1, load=load, out=out1);
-    Bit(in=in2, load=load, out=out2);
-    Bit(in=in3, load=load, out=out3);
+    Inc16(in=registerout,out=intomux);
+    Mux16(a=intomux,b=outmux2,sel=inc,out=outmux);
+    Mux16(a=intomux,b=false,sel=reset, out=outmux2);
 
-    // 加法逻辑
-    Xor(a=out0, b=inc, out=next0);
-    And(a=out0, b=inc, out=c1);
 
-    Xor(a=out1, b=c1, out=next1);
-    And(a=out1, b=c1, out=c2);
-
-    Xor(a=out2, b=c2, out=next2);
-    And(a=out2, b=c2, out=c3);
-
-    Xor(a=out3, b=c3, out=next3);
-
-    // reset 优先级高于 inc
-    Mux(a=next0, b=false, sel=reset, out=in0);
-    Mux(a=next1, b=false, sel=reset, out=in1);
-    Mux(a=next2, b=false, sel=reset, out=in2);
-    Mux(a=next3, b=false, sel=reset, out=in3);
-
-    Or(a=inc, b=reset, out=load);
+    Register(in=outmux2,load=true,out=registerout，out=out);
 }
-
