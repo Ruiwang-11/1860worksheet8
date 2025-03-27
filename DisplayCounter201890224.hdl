@@ -1,33 +1,35 @@
 CHIP DisplayCounter201890224 {
     IN inc, reset;
-    OUT a, b, c, d, e, f, g，currBits[16];
+    OUT a, b, c, d, e, f, g;
+
     PARTS:
-    // 当前寄存器值
+    // 当前计数寄存器值
     Register(in=nextVal, load=load, out=currVal);
 
-    // 创建中间输出 wire 作为 currVal 的副本
-    // 这样我们就可以对 currBits 切片使用 [0]、[1] 等
-    // trick: 用 And16 复制 currVal 到 currBits
-    And16(a=currVal, b=true, out=currBits);
-
-    // 加1结果
+    // 加1后的值
     Inc16(in=currVal, out=plusOne);
 
-    // 是否加1
+    // 判断是否加1
     Mux16(a=currVal, b=plusOne, sel=inc, out=incVal);
 
-    // 是否重置
+    // 判断是否reset
     Mux16(a=incVal, b=false, sel=reset, out=nextVal);
 
     // load = inc or reset
     Or(a=inc, b=reset, out=load);
 
-    // 用 currBits 作为 Decoder 输入（可以 safely 切片）
+    // 将 currVal 的低4位拆出来
+    And(a=currVal[0], b=true, out=A);
+    And(a=currVal[1], b=true, out=B);
+    And(a=currVal[2], b=true, out=C);
+    And(a=currVal[3], b=true, out=D);
+
+    // 输入给你的译码器
     Decoder201890224(
-        A=currBits[0],
-        B=currBits[1],
-        C=currBits[2],
-        D=currBits[3],
+        A=A,
+        B=B,
+        C=C,
+        D=D,
         a=a, b=b, c=c, d=d, e=e, f=f, g=g
     );
 }
