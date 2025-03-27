@@ -1,46 +1,9 @@
-CHIP DisplayCounter201890224 {
+CHIP DisplayCounter201890224{
     IN inc, reset;
-    OUT a, b, c, d, e, f, g;
+    OUT a,b,c,d,e,f,g;
+    PARTS :
 
-    PARTS:
-    // 4 位寄存器输出
-    Bit(in=in0, load=load, out=out0);
-    Bit(in=in1, load=load, out=out1);
-    Bit(in=in2, load=load, out=out2);
-    Bit(in=in3, load=load, out=out3);
 
-    // ===== 手动构造加法器 =====
-    // 第一位（最低位）
-    Xor(a=out0, b=inc, out=next0);
-    And(a=out0, b=inc, out=c1);
-
-    // 第二位
-    Xor(a=out1, b=c1, out=next1);
-    And(a=out1, b=c1, out=c2);
-
-    // 第三位
-    Xor(a=out2, b=c2, out=next2);
-    And(a=out2, b=c2, out=c3);
-
-    // 第四位
-    Xor(a=out3, b=c3, out=next3);
-
-    // ===== 处理 reset 控制优先级 =====
-    Mux(a=next0, b=false, sel=reset, out=in0);
-    Mux(a=next1, b=false, sel=reset, out=in1);
-    Mux(a=next2, b=false, sel=reset, out=in2);
-    Mux(a=next3, b=false, sel=reset, out=in3);
-
-    // load 控制：只要 inc 或 reset 有一个为 1 就加载
-    Or(a=inc, b=reset, out=load);
-
-    // ===== 输出接到七段译码器 =====
-    Decoder201890224(
-        A=out0,
-        B=out1,
-        C=out2,
-        D=out3,
-        a=a, b=b, c=c, d=d, e=e, f=f, g=g
-    );
+    Counter(a=inc，b=reset,out=temp);
+    Decoder201890224(in=temp,out=a,b,c,d,e,f,g);
 }
-

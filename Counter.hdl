@@ -1,0 +1,11 @@
+CHIP Counter{
+    IN inc, reset,
+    OUT out[16];
+    PARTS :
+    Inc16(in=registerout,out=intomux);
+    Mux16(a=intomux,b=outmux2,sel=inc,out=outmux);
+    Mux16(a=intomux,b=false,sel=reset, out=outmux2);
+
+
+    Register(in=outmux2,load=true,out=registerout，out=out);
+}
