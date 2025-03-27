@@ -1,23 +1,11 @@
-CHIP Counter {
-    IN inc, reset;
+CHIP Counter{
+    IN inc, reset,
     OUT out[16];
-
     PARTS:
-    // 当前寄存器值
-    Register(in=next, load=load, out=curr);
+    Inc16(in=registerout,out=intomux);
+    Mux16(a=intomux,b=outmux2,sel=inc,out=outmux);
+    Mux16(a=intomux,b=false,sel=reset, out=outmux2);
 
-    // 自增
-    Inc16(in=curr, out=incout);
 
-    // 如果 inc=1，则使用 incout；否则保持 curr
-    Mux16(a=curr, b=incout, sel=inc, out=afterInc);
-
-    // 如果 reset=1，则变成0；否则使用 afterInc
-    Mux16(a=afterInc, b=false, sel=reset, out=next);
-
-    // load 信号控制
-    Or(a=inc, b=reset, out=load);
-
-    // 输出连接
-    And16(a=curr, b=true, out=out);  // 把 curr 复制给 out
+    Register(in=outmux2,load=true,out=registerout，out=out);
 }
