@@ -3,13 +3,13 @@ CHIP Counter {
     OUT out0, out1, out2, out3;
 
     PARTS:
-    // 4 个寄存器：每位一个
+    // 独立4位寄存器
     Bit(in=in0, load=load, out=out0);
     Bit(in=in1, load=load, out=out1);
     Bit(in=in2, load=load, out=out2);
     Bit(in=in3, load=load, out=out3);
 
-    // 加法逻辑（从低位到高位）
+    // 加法逻辑
     Xor(a=out0, b=inc, out=next0);
     And(a=out0, b=inc, out=c1);
 
@@ -27,7 +27,6 @@ CHIP Counter {
     Mux(a=next2, b=false, sel=reset, out=in2);
     Mux(a=next3, b=false, sel=reset, out=in3);
 
-    // load = inc OR reset
     Or(a=inc, b=reset, out=load);
 }
 
