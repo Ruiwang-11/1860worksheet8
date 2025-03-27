@@ -1,23 +1,14 @@
 CHIP Counter {
-    IN inc, reset;
-    OUT out[16];
-
-    PARTS:
-    // 当前值寄存器
-    Register(in=next, load=load, out=r);
-
-    // 自增器
-    Inc16(in=r, out=incOut);
-
-    // inc 控制是否加一
-    Mux16(a=r, b=incOut, sel=inc, out=afterInc);
-
-    // reset 控制是否清零
-    Mux16(a=afterInc, b=false, sel=reset, out=next);
-
-    // 加载条件
-    Or(a=inc, b=reset, out=load);
-
-    // 输出当前寄存器值
-    And16(a=r, b[0..15]=true, out=out);
+    IN in[16], load, inc, reset;
+    OUT out[16];
+    
+    PARTS:
+  
+    Mux16(a=start, b=in, sel=load, out=first);
+    Mux16(a=first,b=false,sel=reset,out=forreg);
+    Register(in=forreg, load=true,out=rout);
+    And16(a=rout,b=rout,out=out);
+    Inc16(in=rout, out=incrementedValue);
+    Mux16(a=rout,b=incrementedValue,sel=inc,out=start);
+ 
 }
