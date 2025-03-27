@@ -3,28 +3,24 @@ CHIP DisplayCounter201890224 {
     OUT a, b, c, d, e, f, g;
 
     PARTS:
-    // 内部寄存器保存状态，输出叫 regOut
-    Register(in=next, load=load, out=regOut);
+    // 当前寄存值
+    Register(in=next, load=load, out=out);
 
     // 自增
-    Inc16(in=regOut, out=plusOne);
+    Inc16(in=out, out=outPlus1);
 
-    // inc 控制是否加一
-    Mux16(a=regOut, b=plusOne, sel=inc, out=afterInc);
-
-    // reset 控制是否清零
+    // reset 优先级高于 inc
+    Mux16(a=out, b=outPlus1, sel=inc, out=afterInc);
     Mux16(a=afterInc, b=false, sel=reset, out=next);
-
-    // load = inc or reset
     Or(a=inc, b=reset, out=load);
 
-    // 提取 regOut 的低4位为新的wire（不能切片）
-    And(a=regOut[0], b=true, out=w0);
-    And(a=regOut[1], b=true, out=w1);
-    And(a=regOut[2], b=true, out=w2);
-    And(a=regOut[3], b=true, out=w3);
+    // 提取前 4 位（不能直接写 out[0]，要用合法 wire）
+    And(a=out[0], b=true, out=w0);
+    And(a=out[1], b=true, out=w1);
+    And(a=out[2], b=true, out=w2);
+    And(a=out[3], b=true, out=w3);
 
-    // 接入译码器
+    // 接入七段译码器
     Decoder201890224(
         A=w0,
         B=w1,
