@@ -1,14 +1,20 @@
 CHIP Counter {
-    IN in[16], load, inc, reset;
-    OUT out[16];
-    
-    PARTS:
-  
-    Mux16(a=start, b=in, sel=load, out=first);
-    Mux16(a=first,b=false,sel=reset,out=forreg);
-    Register(in=forreg, load=true,out=rout);
-    And16(a=rout,b=rout,out=out);
-    Inc16(in=rout, out=incrementedValue);
-    Mux16(a=rout,b=incrementedValue,sel=inc,out=start);
- 
+    IN inc, reset;
+    OUT out[16];
+
+    PARTS:
+    // 实现加一逻辑
+    Inc16(in=regOut, out=incOut);
+
+    // 根据 inc 控制是否加一
+    Mux16(a=regOut, b=incOut, sel=inc, out=afterInc);
+
+    // 根据 reset 控制是否清零
+    Mux16(a=afterInc, b=false, sel=reset, out=inputToRegister);
+
+    // 使用寄存器保存状态
+    Register(in=inputToRegister, load=true, out=regOut);
+
+    // 输出当前状态
+    And16(a=regOut, b=regOut, out=out);
 }
