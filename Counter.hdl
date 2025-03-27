@@ -3,55 +3,31 @@ CHIP Counter {
     OUT out0, out1, out2, out3;
 
     PARTS:
-    // 当前值寄存器
-    Register(in=next, load=load, out=r);
+    // 4 个寄存器：每位一个
+    Bit(in=in0, load=load, out=out0);
+    Bit(in=in1, load=load, out=out1);
+    Bit(in=in2, load=load, out=out2);
+    Bit(in=in3, load=load, out=out3);
 
-    // 加1
-    Inc16(in=r, out=plus1);
+    // 加法逻辑（从低位到高位）
+    Xor(a=out0, b=inc, out=next0);
+    And(a=out0, b=inc, out=c1);
 
-    // inc控制是否加1
-    Mux16(a=r, b=plus1, sel=inc, out=afterInc);
+    Xor(a=out1, b=c1, out=next1);
+    And(a=out1, b=c1, out=c2);
 
-    // reset控制是否归零
-    Mux16(a=afterInc, b=false, sel=reset, out=next);
+    Xor(a=out2, b=c2, out=next2);
+    And(a=out2, b=c2, out=c3);
 
-    // load控制：inc 或 reset 任意为1就加载
+    Xor(a=out3, b=c3, out=next3);
+
+    // reset 优先级高于 inc
+    Mux(a=next0, b=false, sel=reset, out=in0);
+    Mux(a=next1, b=false, sel=reset, out=in1);
+    Mux(a=next2, b=false, sel=reset, out=in2);
+    Mux(a=next3, b=false, sel=reset, out=in3);
+
+    // load = inc OR reset
     Or(a=inc, b=reset, out=load);
-
-    // ✅ 不使用切片提取 r[0]~r[3]
-    // 用 And + 常量提取各位
-    // 提取第0位
-    And(a=r, b[0]=true, b[1]=false, b[2]=false, b[3]=false,
-        b[4]=false, b[5]=false, b[6]=false, b[7]=false,
-        b[8]=false, b[9]=false, b[10]=false, b[11]=false,
-        b[12]=false, b[13]=false, b[14]=false, b[15]=false,
-        out=w0);
-
-    // 提取第1位
-    And(a=r, b[0]=false, b[1]=true, b[2]=false, b[3]=false,
-        b[4]=false, b[5]=false, b[6]=false, b[7]=false,
-        b[8]=false, b[9]=false, b[10]=false, b[11]=false,
-        b[12]=false, b[13]=false, b[14]=false, b[15]=false,
-        out=w1);
-
-    // 提取第2位
-    And(a=r, b[0]=false, b[1]=false, b[2]=true, b[3]=false,
-        b[4]=false, b[5]=false, b[6]=false, b[7]=false,
-        b[8]=false, b[9]=false, b[10]=false, b[11]=false,
-        b[12]=false, b[13]=false, b[14]=false, b[15]=false,
-        out=w2);
-
-    // 提取第3位
-    And(a=r, b[0]=false, b[1]=false, b[2]=false, b[3]=true,
-        b[4]=false, b[5]=false, b[6]=false, b[7]=false,
-        b[8]=false, b[9]=false, b[10]=false, b[11]=false,
-        b[12]=false, b[13]=false, b[14]=false, b[15]=false,
-        out=w3);
-
-    // 再提取低位（用 Bitwise Or 或 And 其中一位输出）
-    And(a=w0, b=true, out=out0);
-    And(a=w1, b=true, out=out1);
-    And(a=w2, b=true, out=out2);
-    And(a=w3, b=true, out=out3);
 }
 
